@@ -124,7 +124,8 @@ impl Renderer {
     pub fn render(
         &mut self,
         device: &Device,
-        window: &Window,
+        command_buffer: &mut CommandBuffer,
+        color_targets: &mut [ColorTargetInfo],
         imgui_context: &mut imgui::Context,
     ) -> Result<(), Box<dyn Error>> {
         let io = imgui_context.io();
@@ -141,172 +142,156 @@ impl Renderer {
             return Ok(());
         }
 
-        // Acquire a command buffer to begin rendering
-        let mut command_buffer = device.acquire_command_buffer()?;
+        let render_pass = device.begin_render_pass(command_buffer, color_targets, None)?;
+        render_pass.bind_graphics_pipeline(&self.pipeline);
 
-        // Acquire swapchain texture for the window
-        if let Ok(swapchain) = command_buffer.wait_and_acquire_swapchain_texture(window) {
-            let color_targets = [ColorTargetInfo::default()
-                .with_texture(&swapchain)
-                .with_load_op(LoadOp::Load)
-                .with_store_op(StoreOp::Store)];
+        // Create a texture sampler and bind font texture
+        let sampler = device
+            .create_sampler(
+                SamplerCreateInfo::new()
+                    .with_min_filter(Filter::Linear)
+                    .with_mag_filter(Filter::Linear)
+                    .with_mipmap_mode(SamplerMipmapMode::Linear)
+                    .with_address_mode_u(SamplerAddressMode::ClampToEdge)
+                    .with_address_mode_v(SamplerAddressMode::ClampToEdge)
+                    .with_address_mode_w(SamplerAddressMode::ClampToEdge),
+            )
+            .unwrap();
 
-            let render_pass = device.begin_render_pass(&command_buffer, &color_targets, None)?;
-            render_pass.bind_graphics_pipeline(&self.pipeline);
+        let sampler_binding = TextureSamplerBinding::new()
+            .with_texture(&self.font_texture)
+            .with_sampler(&sampler);
 
-            // Create a texture sampler and bind font texture
-            let sampler = device
-                .create_sampler(
-                    SamplerCreateInfo::new()
-                        .with_min_filter(Filter::Linear)
-                        .with_mag_filter(Filter::Linear)
-                        .with_mipmap_mode(SamplerMipmapMode::Linear)
-                        .with_address_mode_u(SamplerAddressMode::ClampToEdge)
-                        .with_address_mode_v(SamplerAddressMode::ClampToEdge)
-                        .with_address_mode_w(SamplerAddressMode::ClampToEdge),
-                )
-                .unwrap();
+        render_pass.bind_fragment_samplers(0, &[sampler_binding]);
 
-            let sampler_binding = TextureSamplerBinding::new()
-                .with_texture(&self.font_texture)
-                .with_sampler(&sampler);
+        // Flatten all draw data into a single vertex/index buffer
+        let mut vtx_data = Vec::with_capacity(draw_data.total_vtx_count as usize);
+        let mut idx_data = Vec::with_capacity(draw_data.total_idx_count as usize);
+        for draw_list in draw_data.draw_lists() {
+            vtx_data.extend_from_slice(draw_list.vtx_buffer());
+            idx_data.extend_from_slice(draw_list.idx_buffer());
+        }
 
-            render_pass.bind_fragment_samplers(0, &[sampler_binding]);
+        // Create a buffer for transfer and copy data
+        let copy_commands = device.acquire_command_buffer()?;
+        let transfer_buffer = device
+            .create_transfer_buffer()
+            .with_size((vtx_data.len().max(idx_data.len()) * std::mem::size_of::<DrawVert>()) as u32)
+            .with_usage(sdl3::gpu::TransferBufferUsage::Upload)
+            .build()?;
 
-            // Flatten all draw data into a single vertex/index buffer
-            let mut vtx_data = Vec::with_capacity(draw_data.total_vtx_count as usize);
-            let mut idx_data = Vec::with_capacity(draw_data.total_idx_count as usize);
-            for draw_list in draw_data.draw_lists() {
-                vtx_data.extend_from_slice(draw_list.vtx_buffer());
-                idx_data.extend_from_slice(draw_list.idx_buffer());
-            }
+        let copy_pass = device.begin_copy_pass(&copy_commands)?;
 
-            // Create a buffer for transfer and copy data
-            let copy_commands = device.acquire_command_buffer()?;
-            let transfer_buffer = device
-                .create_transfer_buffer()
-                .with_size((vtx_data.len().max(idx_data.len()) * std::mem::size_of::<DrawVert>()) as u32)
-                .with_usage(sdl3::gpu::TransferBufferUsage::Upload)
-                .build()?;
+        let vertex_buffer = create_buffer_with_data(
+            device,
+            &transfer_buffer,
+            &copy_pass,
+            sdl3::gpu::BufferUsageFlags::Vertex,
+            &vtx_data,
+        )?;
 
-            let copy_pass = device.begin_copy_pass(&copy_commands)?;
+        let index_buffer = create_buffer_with_data(
+            device,
+            &transfer_buffer,
+            &copy_pass,
+            sdl3::gpu::BufferUsageFlags::Index,
+            &idx_data,
+        )?;
 
-            let vertex_buffer = create_buffer_with_data(
-                device,
-                &transfer_buffer,
-                &copy_pass,
-                sdl3::gpu::BufferUsageFlags::Vertex,
-                &vtx_data,
-            )?;
+        device.end_copy_pass(copy_pass);
+        copy_commands.submit()?;
 
-            let index_buffer = create_buffer_with_data(
-                device,
-                &transfer_buffer,
-                &copy_pass,
-                sdl3::gpu::BufferUsageFlags::Index,
-                &idx_data,
-            )?;
+        // Bind vertex and index buffers
+        render_pass.bind_vertex_buffers(0, &[BufferBinding::new().with_buffer(&vertex_buffer).with_offset(0)]);
+        render_pass.bind_index_buffer(
+            &BufferBinding::new().with_buffer(&index_buffer).with_offset(0),
+            if size_of::<DrawIdx>() == 2 {
+                IndexElementSize::_16Bit
+            } else {
+                IndexElementSize::_32Bit
+            },
+        );
 
-            device.end_copy_pass(copy_pass);
-            copy_commands.submit()?;
+        // Set viewport and projection matrix
+        device.set_viewport(
+            &render_pass,
+            SDL_GPUViewport {
+                x: 0.0,
+                y: 0.0,
+                w: fb_width,
+                h: fb_height,
+                min_depth: 0.0,
+                max_depth: 1.0,
+            },
+        );
 
-            // Bind vertex and index buffers
-            render_pass.bind_vertex_buffers(0, &[BufferBinding::new().with_buffer(&vertex_buffer).with_offset(0)]);
-            render_pass.bind_index_buffer(
-                &BufferBinding::new().with_buffer(&index_buffer).with_offset(0),
-                if size_of::<DrawIdx>() == 2 {
-                    IndexElementSize::_16Bit
-                } else {
-                    IndexElementSize::_32Bit
-                },
-            );
+        // Push orthographic projection matrix
+        let matrix = [
+            [2.0 / width, 0.0, 0.0, 0.0],
+            [0.0, 2.0 / -height, 0.0, 0.0],
+            [0.0, 0.0, -1.0, 0.0],
+            [-1.0, 1.0, 0.0, 1.0],
+        ];
+        command_buffer.push_vertex_uniform_data(0, &matrix);
 
-            // Set viewport and projection matrix
-            device.set_viewport(
-                &render_pass,
-                SDL_GPUViewport {
-                    x: 0.0,
-                    y: 0.0,
-                    w: fb_width,
-                    h: fb_height,
-                    min_depth: 0.0,
-                    max_depth: 1.0,
-                },
-            );
+        // Render each draw command
+        let mut voffset = 0;
+        let mut ioffset = 0;
 
-            // Push orthographic projection matrix
-            let matrix = [
-                [2.0 / width, 0.0, 0.0, 0.0],
-                [0.0, 2.0 / -height, 0.0, 0.0],
-                [0.0, 0.0, -1.0, 0.0],
-                [-1.0, 1.0, 0.0, 1.0],
-            ];
-            command_buffer.push_vertex_uniform_data(0, &matrix);
+        for draw_list in draw_data.draw_lists() {
+            for draw_cmd in draw_list.commands() {
+                match draw_cmd {
+                    imgui::DrawCmd::Elements {
+                        count,
+                        cmd_params:
+                            DrawCmdParams {
+                                clip_rect: [x, y, w, h],
+                                idx_offset,
+                                vtx_offset,
+                                ..
+                            },
+                    } => {
+                        // Calculate scissor rectangle
+                        let scissor_x = (x * scale_w) as i32;
+                        let scissor_y = (y * scale_h) as i32;
+                        let scissor_w = ((w - x) * scale_w).max(0.0) as u32;
+                        let scissor_h = ((h - y) * scale_h).max(0.0) as u32;
 
-            // Render each draw command
-            let mut voffset = 0;
-            let mut ioffset = 0;
-
-            for draw_list in draw_data.draw_lists() {
-                for draw_cmd in draw_list.commands() {
-                    match draw_cmd {
-                        imgui::DrawCmd::Elements {
-                            count,
-                            cmd_params:
-                                DrawCmdParams {
-                                    clip_rect: [x, y, w, h],
-                                    idx_offset,
-                                    vtx_offset,
-                                    ..
-                                },
-                        } => {
-                            // Calculate scissor rectangle
-                            let scissor_x = (x * scale_w) as i32;
-                            let scissor_y = (y * scale_h) as i32;
-                            let scissor_w = ((w - x) * scale_w).max(0.0) as u32;
-                            let scissor_h = ((h - y) * scale_h).max(0.0) as u32;
-
-                            // Skip if scissor is invalid
-                            if scissor_w > 0 && scissor_h > 0 {
-                                unsafe {
-                                    sdl3_sys::gpu::SDL_SetGPUScissor(
-                                        render_pass.raw(),
-                                        Rect::new(scissor_x, scissor_y, scissor_w, scissor_h).raw(),
-                                    )
-                                }
-                            } else {
-                                continue;
+                        // Skip if scissor is invalid
+                        if scissor_w > 0 && scissor_h > 0 {
+                            unsafe {
+                                sdl3_sys::gpu::SDL_SetGPUScissor(
+                                    render_pass.raw(),
+                                    Rect::new(scissor_x, scissor_y, scissor_w, scissor_h).raw(),
+                                )
                             }
-
-                            // Draw the elements
-                            render_pass.draw_indexed_primitives(
-                                count as u32,
-                                1,
-                                (idx_offset + ioffset) as u32,
-                                (vtx_offset + voffset) as i32,
-                                0,
-                            );
+                        } else {
+                            continue;
                         }
 
-                        imgui::DrawCmd::RawCallback { callback, raw_cmd } => unsafe {
-                            callback(draw_list.raw(), raw_cmd);
-                        },
-
-                        _ => {}
+                        // Draw the elements
+                        render_pass.draw_indexed_primitives(
+                            count as u32,
+                            1,
+                            (idx_offset + ioffset) as u32,
+                            (vtx_offset + voffset) as i32,
+                            0,
+                        );
                     }
-                }
 
-                ioffset += draw_list.idx_buffer().len();
-                voffset += draw_list.vtx_buffer().len();
+                    imgui::DrawCmd::RawCallback { callback, raw_cmd } => unsafe {
+                        callback(draw_list.raw(), raw_cmd);
+                    },
+
+                    _ => {}
+                }
             }
 
-            device.end_render_pass(render_pass);
-            command_buffer.submit()?;
-        } else {
-            // Swapchain texture could not be acquired
-            println!("Swapchain unavailable, cancel work");
-            command_buffer.cancel();
+            ioffset += draw_list.idx_buffer().len();
+            voffset += draw_list.vtx_buffer().len();
         }
+
+        device.end_render_pass(render_pass);
 
         Ok(())
     }

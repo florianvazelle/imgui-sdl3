@@ -1,10 +1,7 @@
 use imgui_sdl3::ImGuiSdl3;
-use sdl3::{
-    event::Event,
-    gpu::{Device, ShaderFormat},
-};
+use sdl3::{event::Event, gpu::*, pixels::Color};
 
-fn main() {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     // initialize SDL and its video subsystem
     let mut sdl = sdl3::init().unwrap();
     let video_subsystem = sdl.video().unwrap();
@@ -46,9 +43,34 @@ fn main() {
             }
         }
 
-        imgui.render(&mut sdl, &device, &window, &event_pump, |ui| {
-            // create imgui UI here
-            ui.show_demo_window(&mut true);
-        });
+        let mut command_buffer = device.acquire_command_buffer()?;
+
+        if let Ok(swapchain) = command_buffer.wait_and_acquire_swapchain_texture(&window) {
+            let mut color_targets = [ColorTargetInfo::default()
+                .with_texture(&swapchain)
+                .with_load_op(LoadOp::Clear)
+                .with_store_op(StoreOp::Store)
+                .with_clear_color(Color::RGB(128, 128, 128))];
+
+            imgui.render(
+                &mut sdl,
+                &device,
+                &window,
+                &event_pump,
+                &mut command_buffer,
+                &mut color_targets,
+                |ui| {
+                    // create imgui UI here
+                    ui.show_demo_window(&mut true);
+                },
+            );
+
+            command_buffer.submit()?;
+        } else {
+            println!("Swapchain unavailable, cancel work");
+            command_buffer.cancel();
+        }
     }
+
+    Ok(())
 }

@@ -1,9 +1,9 @@
 pub mod platform;
 pub mod renderer;
 pub mod utils;
-
 use platform::Platform;
 use renderer::Renderer;
+use sdl3::gpu::*;
 
 pub struct ImGuiSdl3 {
     imgui_context: imgui::Context,
@@ -33,15 +33,18 @@ impl ImGuiSdl3 {
         self.platform.handle_event(&mut self.imgui_context, event);
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn render<T>(
         &mut self,
         sdl_context: &mut sdl3::Sdl,
         device: &sdl3::gpu::Device,
         window: &sdl3::video::Window,
         event_pump: &sdl3::EventPump,
-        draw_callback: T,
+        command_buffer: &mut CommandBuffer,
+        color_targets: &mut [ColorTargetInfo],
+        mut draw_callback: T,
     ) where
-        T: Fn(&mut imgui::Ui),
+        T: FnMut(&mut imgui::Ui),
     {
         self.platform
             .prepare_frame(sdl_context, &mut self.imgui_context, window, event_pump);
@@ -49,6 +52,8 @@ impl ImGuiSdl3 {
         let ui = self.imgui_context.new_frame();
         draw_callback(ui);
 
-        self.renderer.render(device, window, &mut self.imgui_context).unwrap();
+        self.renderer
+            .render(device, command_buffer, color_targets, &mut self.imgui_context)
+            .unwrap();
     }
 }
