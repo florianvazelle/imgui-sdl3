@@ -173,8 +173,8 @@ impl Platform {
 /// # let mut event_pump: sdl3::EventPump = unimplemented!();
 /// # let window: sdl3::video::Window = unimplemented!();
 /// # let mut imgui = imgui::Context::create();
-/// # let mut platform = Platform::init(&mut imgui);
-/// use imgui_sdl3_support::{Platform, filter_event};
+/// # let mut platform = Platform::new(&mut imgui);
+/// use imgui_sdl3::platform::{Platform, filter_event};
 /// // Assuming there are multiple windows, we only want to provide the events
 /// // of the window where we are rendering to imgui-rs
 /// for event in event_pump.poll_iter().filter(|event| filter_event(&window, event)) {

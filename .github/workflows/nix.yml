@@ -9,13 +9,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v31
-      - run: nix develop --command cargo fmt --check
-      - run: nix develop --command cargo check --examples
-      - run: nix develop --command cargo clippy --examples
+      - uses: extractions/setup-just@v3
+      - run: nix develop --command just lint
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v31
+      - run: nix build 
 
   examples:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v31
-      - run: nix develop --command cargo build --example demo
+      - uses: extractions/setup-just@v3
+      - run: nix develop --command just test

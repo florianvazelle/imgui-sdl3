@@ -18,7 +18,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    naersk.url = "github:nix-community/naersk/master";
+    crane.url = "github:ipetkov/crane";
     utils.url = "github:numtide/flake-utils";
 
     fenix = {
@@ -27,7 +27,7 @@
     };
   };
 
-  outputs = { self, fenix, utils, naersk, nixpkgs }:
+  outputs = { self, fenix, utils, crane, nixpkgs }:
     utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; };
@@ -37,7 +37,24 @@
           sha256 = "sha256-YPI68A3grlRdMiCP4ZHthsKHtHtylVMyBRAxmhrlxLM=";
         };
 
+        craneLib = (crane.mkLib pkgs).overrideToolchain (p: toolchain);
+        src = craneLib.cleanCargoSource ./.;
+
       in {
+        defaultPackage = with pkgs; craneLib.buildPackage {
+          src = ./.;
+          nativeBuildInputs = [
+            # sdl3
+            sdl3
+
+            # shaderc
+            cmake libcxx git python3
+          ];
+          preBuild = ''
+            export LD_LIBRARY_PATH=${lib.makeLibraryPath [ sdl3 stdenv.cc.cc ]}:$LD_LIBRARY_PATH
+          '';
+        };
+
         devShell = with pkgs; mkShell {
           buildInputs = [
             # rust

@@ -2,10 +2,13 @@
 
 # `imgui-sdl3`
 
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/florianvazelle/imgui-sdl3/nix.yml)
-![GitHub License](https://img.shields.io/github/license/florianvazelle/imgui-sdl3)
+**Rust library that integrates Dear ImGui with SDL3.**
 
-Rust library that integrates Dear ImGui with SDL3.
+[![Crates.io](https://img.shields.io/crates/v/imgui-sdl3.svg)](https://crates.io/crates/imgui-sdl3)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/florianvazelle/imgui-sdl3/nix.yml)
+[![API Docs](https://docs.rs/imgui-sdl3/badge.svg)](https://docs.rs/imgui-sdl3)
+[![dependency status](https://deps.rs/repo/github/florianvazelle/imgui-sdl3/status.svg)](https://deps.rs/repo/github/florianvazelle/imgui-sdl3)
+![GitHub License](https://img.shields.io/github/license/florianvazelle/imgui-sdl3)
 
 </div>
 
@@ -14,7 +17,7 @@ Rust library that integrates Dear ImGui with SDL3.
 This crate provides an SDL3 backend platform and renderer for imgui-rs.
 
 - The backend platform handles window/input device events (based on [ghtalpo/imgui-sdl3-support](https://github.com/ghtalpo/imgui-sdl3-support)),
-- The rendering backend use the SDL3 GPU API.
+- The rendering backend use the SDL3 GPU API, and can be use as a render pass.
 
 > For a canvas rendering backend, check out [masonjmj/imgui-rs-sdl3-renderer](https://github.com/masonjmj/imgui-rs-sdl3-renderer).
 
@@ -22,12 +25,9 @@ This crate provides an SDL3 backend platform and renderer for imgui-rs.
 
 ```rs
 use imgui_sdl3::ImGuiSdl3;
-use sdl3::{
-    event::Event,
-    gpu::{Device, ShaderFormat},
-};
+use sdl3::{event::Event, gpu::*, pixels::Color};
 
-fn main() {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     // initialize SDL and its video subsystem
     let mut sdl = sdl3::init().unwrap();
     let video_subsystem = sdl.video().unwrap();
@@ -69,11 +69,36 @@ fn main() {
             }
         }
 
-        imgui.render(&mut sdl, &device, &window, &event_pump, |ui| {
-            // create imgui UI here
-            ui.show_demo_window(&mut true);
-        });
+        let mut command_buffer = device.acquire_command_buffer()?;
+
+        if let Ok(swapchain) = command_buffer.wait_and_acquire_swapchain_texture(&window) {
+            let mut color_targets = [ColorTargetInfo::default()
+                .with_texture(&swapchain)
+                .with_load_op(LoadOp::Clear)
+                .with_store_op(StoreOp::Store)
+                .with_clear_color(Color::RGB(128, 128, 128))];
+
+            imgui.render(
+                &mut sdl,
+                &device,
+                &window,
+                &event_pump,
+                &mut command_buffer,
+                &mut color_targets,
+                |ui| {
+                    // create imgui UI here
+                    ui.show_demo_window(&mut true);
+                },
+            );
+
+            command_buffer.submit()?;
+        } else {
+            println!("Swapchain unavailable, cancel work");
+            command_buffer.cancel();
+        }
     }
+
+    Ok(())
 }
 ```
 
