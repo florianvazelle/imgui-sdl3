@@ -14,7 +14,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .build()
         .unwrap();
 
-    let device = Device::new(ShaderFormat::SpirV, true)
+    let device = Device::new(ShaderFormat::SPIRV, true)
         .unwrap()
         .with_window(&window)
         .unwrap();
