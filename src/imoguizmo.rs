@@ -1,11 +1,10 @@
 use glam::{Mat4, Vec2, Vec3, Vec4};
-use imgui::{DrawListMut, ImColor32, Ui}; // adapt DrawListMut type to your imgui crate
+use imgui::{DrawListMut, ImColor32, MouseButton, Ui};
 use std::cmp::Ordering;
 use std::f32;
 use std::sync::LazyLock;
 
 pub mod internal {
-    
     use std::cell::RefCell;
 
     #[derive(Debug, Clone, Copy)]
@@ -27,6 +26,29 @@ pub mod internal {
 
     thread_local! {
         pub static RECT: RefCell<RectConfig> = RefCell::new(RectConfig::default());
+    }
+
+    #[derive(Debug, Clone, Copy)]
+    pub struct DragState {
+        pub active: bool,
+        pub last_mouse: [f32; 2],
+        pub yaw: f32,
+        pub pitch: f32,
+    }
+
+    impl Default for DragState {
+        fn default() -> Self {
+            Self {
+                active: false,
+                last_mouse: [0.0, 0.0],
+                yaw: 0.0,
+                pitch: 0.0,
+            }
+        }
+    }
+
+    thread_local! {
+        pub static DRAG_STATE: RefCell<DragState> = RefCell::new(DragState::default());
     }
 }
 
@@ -137,7 +159,7 @@ pub fn set_rect(x: f32, y: f32, size: f32) {
     });
 }
 
-// Positions an invisible window for the gizmo (requires Ui handle).
+// Positions an invisible window for the gizmo.
 pub fn begin_frame<R, F: FnOnce() -> R>(ui: &Ui, background: bool, f: F) -> Option<R> {
     use imgui::{Condition, WindowFlags};
 
@@ -172,11 +194,9 @@ pub fn draw_gizmo(
     projection_matrix: mint::ColumnMatrix4<f32>,
     pivot_distance: f32,
 ) -> Option<mint::ColumnMatrix4<f32>> {
-    use internal::RECT;
-
     let mut draw_list = ui.get_window_draw_list();
 
-    let (center, size, hsize) = RECT.with(|r| {
+    let (center, size, hsize) = internal::RECT.with(|r| {
         let r = *r.borrow();
         let h = r.m_size * 0.5;
         (
@@ -405,21 +425,19 @@ pub fn draw_gizmo(
         }
     }
 
-    if selection != -1 && io.mouse_down[0] {
-        // model = inverse(view)
+    if selection != -1 && ui.is_mouse_clicked(MouseButton::Left) {
         let model: Mat4 = Mat4::from(view_matrix).inverse();
 
-        // translation lives in w_axis.xyz; model Z axis is z_axis.xyz
         let pos = Vec3::new(model.w_axis.x, model.w_axis.y, model.w_axis.z);
         let z_axis_model = Vec3::new(model.z_axis.x, model.z_axis.y, model.z_axis.z);
         let pivot_pos = pos - (z_axis_model * pivot_distance);
 
         let ups = [
             Vec3::new(0.0, 1.0, 0.0),
-            Vec3::new(0.0, 0.0, -1.0),
-            Vec3::new(0.0, 1.0, 0.0),
-            Vec3::new(0.0, 1.0, 0.0),
             Vec3::new(0.0, 0.0, 1.0),
+            Vec3::new(0.0, 1.0, 0.0),
+            Vec3::new(0.0, 1.0, 0.0),
+            Vec3::new(0.0, 0.0, -1.0),
             Vec3::new(0.0, 1.0, 0.0),
         ];
 
@@ -432,7 +450,59 @@ pub fn draw_gizmo(
             5 => Mat4::look_at_lh(pivot_pos - Vec3::new(0.0, 0.0, pivot_distance), pivot_pos, ups[5]),
             _ => return None,
         };
+
         return Some(mint::ColumnMatrix4::from(new_view));
+    }
+
+    let mut view_out: Option<mint::ColumnMatrix4<f32>> = None;
+
+    let hover_inside = check_inside_circle(center, hover_circle_radius, mouse_pos);
+    internal::DRAG_STATE.with(|state| {
+        let mut s = state.borrow_mut();
+
+        if ui.is_mouse_dragging(MouseButton::Left) {
+            if !s.active && hover_inside {
+                // Start drag
+                s.active = true;
+                s.last_mouse = [mouse_pos.x, mouse_pos.y];
+
+                // let inv_view = Mat4::from(view_matrix).inverse();
+                // let forward = -inv_view.z_axis.truncate();
+                // s.yaw = forward.z.atan2(forward.x);
+                // s.pitch = forward.y.asin();
+            } else if s.active {
+                // Drag in progress
+                let dx = mouse_pos.x - s.last_mouse[0];
+                let dy = mouse_pos.y - s.last_mouse[1];
+                s.last_mouse = [mouse_pos.x, mouse_pos.y];
+
+                s.yaw -= dx * 0.05;
+                s.pitch = (s.pitch - dy * 0.05)
+                    .clamp(-std::f32::consts::FRAC_PI_2 + 0.01, std::f32::consts::FRAC_PI_2 - 0.01);
+
+                // Build new forward vector
+                let cos_pitch = s.pitch.cos();
+                let forward = Vec3::new(s.yaw.cos() * cos_pitch, s.pitch.sin(), s.yaw.sin() * cos_pitch);
+
+                // Rotate view matrix: convert to glam, apply yaw/pitch
+                let view_glam: Mat4 = Mat4::from(view_matrix);
+
+                // inverse to get camera position & orientation
+                let inv_view = view_glam.inverse();
+                let cam_pos = Vec3::new(inv_view.w_axis.x, inv_view.w_axis.y, inv_view.w_axis.z);
+
+                let up = Vec3::Y;
+                let new_view = Mat4::look_at_lh(cam_pos, cam_pos + forward, up);
+
+                view_out = Some(mint::ColumnMatrix4::from(new_view));
+            }
+        } else {
+            s.active = false;
+        }
+    });
+
+    if view_out.is_some() {
+        return view_out;
     }
 
     None
