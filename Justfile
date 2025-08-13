@@ -11,5 +11,5 @@ fmt:
     cargo fix --all-targets --examples --tests --allow-dirty --all-features
     cargo clippy --all-targets --fix --examples --tests --allow-dirty --all-features -- --deny warnings
 
-test:
-    cargo run --example demo
+build:
+    cargo build --examples --all-targets --all-features

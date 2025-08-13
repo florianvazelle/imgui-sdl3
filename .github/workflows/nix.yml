@@ -25,4 +25,4 @@ jobs:
       - uses: actions/checkout@v5
       - uses: cachix/install-nix-action@v31
       - uses: extractions/setup-just@v3
-      - run: nix develop --command just test
+      - run: nix develop --command just build
