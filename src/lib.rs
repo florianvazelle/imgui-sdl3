@@ -1,3 +1,5 @@
+#[cfg(feature = "imoguizmo")]
+pub mod imoguizmo;
 pub mod platform;
 pub mod renderer;
 pub mod utils;

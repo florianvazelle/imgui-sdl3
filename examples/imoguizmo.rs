@@ -1,34 +1,5 @@
-<div align="center">
-
-# `imgui-sdl3`
-
-**Rust library that integrates Dear ImGui with SDL3.**
-
-[![Crates.io](https://img.shields.io/crates/v/imgui-sdl3.svg)](https://crates.io/crates/imgui-sdl3)
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/florianvazelle/imgui-sdl3/nix.yml)
-[![API Docs](https://docs.rs/imgui-sdl3/badge.svg)](https://docs.rs/imgui-sdl3)
-[![dependency status](https://deps.rs/repo/github/florianvazelle/imgui-sdl3/status.svg)](https://deps.rs/repo/github/florianvazelle/imgui-sdl3)
-![GitHub License](https://img.shields.io/github/license/florianvazelle/imgui-sdl3)
-
-</div>
-
-## Features
-
-This crate provides an SDL3 backend platform and renderer for imgui-rs.
-
-- The backend platform handles window/input device events (based on [ghtalpo/imgui-sdl3-support](https://github.com/ghtalpo/imgui-sdl3-support)),
-- The rendering backend use the SDL3 GPU API, and can be use as a render pass.
-
-> For a canvas rendering backend, check out [masonjmj/imgui-rs-sdl3-renderer](https://github.com/masonjmj/imgui-rs-sdl3-renderer).
-
-### Available rust features
-
-- `imoguizmo` integrate an interactive orientation gizmo, based on [ImOGuizmo](https://github.com/fknfilewalker/imoguizmo) (check the `examples/imoguizmo.rs` examples to know how to use it).
-
-## Full demo
-
-```rs
-use imgui_sdl3::ImGuiSdl3;
+use glam::Mat4;
+use imgui_sdl3::{ImGuiSdl3, imoguizmo};
 use sdl3::{event::Event, gpu::*, pixels::Color};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -60,6 +31,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .add_font(&[imgui::FontSource::DefaultFontData { config: None }]);
     });
 
+    let mut view = Mat4::from_rotation_x(90.0);
+    let proj = Mat4::IDENTITY;
+
     // start main loop
     let mut event_pump = sdl.event_pump().unwrap();
 
@@ -90,8 +64,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 &mut command_buffer,
                 &color_targets,
                 |ui| {
-                    // create imgui UI here
-                    ui.show_demo_window(&mut true);
+                    imoguizmo::begin_frame(ui, true, || {
+                        if let Some(new_view) = imoguizmo::draw_gizmo(ui, view.into(), proj.into(), 1.0) {
+                            view = new_view.into();
+                        }
+                    });
                 },
             );
 
@@ -104,18 +81,3 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-```
-
-## Development
-
-The project use [`just`](https://just.systems/man/en/) as command runner.
-
-To check all available recipes, run:
-```
-just
-```
-
-To run formatters:
-```
-just fmt
-```
