@@ -32,7 +32,7 @@ impl Renderer {
         let vert = device
             .create_shader()
             .with_code(
-                ShaderFormat::SpirV,
+                ShaderFormat::SPIRV,
                 include_bytes!(concat!(env!("OUT_DIR"), "/imgui.vert.spv")),
                 ShaderStage::Vertex,
             )
@@ -44,7 +44,7 @@ impl Renderer {
         let frag = device
             .create_shader()
             .with_code(
-                ShaderFormat::SpirV,
+                ShaderFormat::SPIRV,
                 include_bytes!(concat!(env!("OUT_DIR"), "/imgui.frag.spv")),
                 ShaderStage::Fragment,
             )
@@ -125,7 +125,7 @@ impl Renderer {
         &mut self,
         device: &Device,
         command_buffer: &mut CommandBuffer,
-        color_targets: &mut [ColorTargetInfo],
+        color_targets: &[ColorTargetInfo],
         imgui_context: &mut imgui::Context,
     ) -> Result<(), Box<dyn Error>> {
         let io = imgui_context.io();
@@ -177,7 +177,7 @@ impl Renderer {
         let transfer_buffer = device
             .create_transfer_buffer()
             .with_size((vtx_data.len().max(idx_data.len()) * std::mem::size_of::<DrawVert>()) as u32)
-            .with_usage(sdl3::gpu::TransferBufferUsage::Upload)
+            .with_usage(sdl3::gpu::TransferBufferUsage::UPLOAD)
             .build()?;
 
         let copy_pass = device.begin_copy_pass(&copy_commands)?;
@@ -186,7 +186,7 @@ impl Renderer {
             device,
             &transfer_buffer,
             &copy_pass,
-            sdl3::gpu::BufferUsageFlags::Vertex,
+            sdl3::gpu::BufferUsageFlags::VERTEX,
             &vtx_data,
         )?;
 
@@ -194,7 +194,7 @@ impl Renderer {
             device,
             &transfer_buffer,
             &copy_pass,
-            sdl3::gpu::BufferUsageFlags::Index,
+            sdl3::gpu::BufferUsageFlags::INDEX,
             &idx_data,
         )?;
 
@@ -206,9 +206,9 @@ impl Renderer {
         render_pass.bind_index_buffer(
             &BufferBinding::new().with_buffer(&index_buffer).with_offset(0),
             if size_of::<DrawIdx>() == 2 {
-                IndexElementSize::_16Bit
+                IndexElementSize::_16BIT
             } else {
-                IndexElementSize::_32Bit
+                IndexElementSize::_32BIT
             },
         );
 

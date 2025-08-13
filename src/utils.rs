@@ -67,13 +67,13 @@ pub fn create_texture(
             .with_height(height)
             .with_layer_count_or_depth(1)
             .with_num_levels(1)
-            .with_usage(TextureUsage::Sampler),
+            .with_usage(TextureUsage::SAMPLER),
     )?;
 
     let transfer_buffer = device
         .create_transfer_buffer()
         .with_size(size_bytes)
-        .with_usage(TransferBufferUsage::Upload)
+        .with_usage(TransferBufferUsage::UPLOAD)
         .build()?;
 
     let mut buffer_mem = transfer_buffer.map::<u8>(device, false);

@@ -51,6 +51,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "glam"
+version = "0.30.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f2d1aab06663bdce00d6ca5e5ed586ec8d18033a771906c993a1e3755b368d85"
+dependencies = [
+ "mint",
+]
+
+[[package]]
 name = "imgui"
 version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -67,7 +76,9 @@ dependencies = [
 name = "imgui-sdl3"
 version = "0.2.0"
 dependencies = [
+ "glam",
  "imgui",
+ "mint",
  "sdl3",
  "sdl3-sys",
  "shaderc",
@@ -175,8 +186,7 @@ checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 [[package]]
 name = "sdl3"
 version = "0.14.36"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a0508380771dfded0cb802963902d43606a1a65387b3378328a81415916ff7ec"
+source = "git+https://github.com/vhspace/sdl3-rs?rev=87f92a7#87f92a73c037f5cd927f19faf5ecaaab5189cc62"
 dependencies = [
  "bitflags 2.9.1",
  "lazy_static",

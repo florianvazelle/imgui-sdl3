@@ -1,3 +1,5 @@
+#[cfg(feature = "imoguizmo")]
+pub mod imoguizmo;
 pub mod platform;
 pub mod renderer;
 pub mod utils;
@@ -41,7 +43,7 @@ impl ImGuiSdl3 {
         window: &sdl3::video::Window,
         event_pump: &sdl3::EventPump,
         command_buffer: &mut CommandBuffer,
-        color_targets: &mut [ColorTargetInfo],
+        color_targets: &[ColorTargetInfo],
         mut draw_callback: T,
     ) where
         T: FnMut(&mut imgui::Ui),
