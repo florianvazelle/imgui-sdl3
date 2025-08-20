@@ -35,7 +35,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     'main: loop {
         for event in event_pump.poll_iter() {
-            // pass all events to imgui platfrom
+            // pass all events to imgui platform
             imgui.handle_event(&event);
 
             if let Event::Quit { .. } = event {

@@ -27,7 +27,7 @@ This crate provides an SDL3 backend platform and renderer for imgui-rs.
 
 ## Full demo
 
-```rs
+```rust
 use imgui_sdl3::ImGuiSdl3;
 use sdl3::{event::Event, gpu::*, pixels::Color};
 
@@ -65,7 +65,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     'main: loop {
         for event in event_pump.poll_iter() {
-            // pass all events to imgui platfrom
+            // pass all events to imgui platform
             imgui.handle_event(&event);
 
             if let Event::Quit { .. } = event {

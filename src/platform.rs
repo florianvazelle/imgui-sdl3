@@ -42,8 +42,6 @@ impl Platform {
 
         io.backend_flags.insert(imgui::BackendFlags::RENDERER_HAS_VTX_OFFSET);
 
-        imgui.set_platform_name(Some(format!("disco {}", env!("CARGO_PKG_VERSION"))));
-
         Platform {
             cursor_instance: None,
             last_frame: Instant::now(),
