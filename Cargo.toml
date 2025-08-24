@@ -13,8 +13,6 @@ readme = "README.md"
 [dependencies]
 imgui = "0.12.0"
 sdl3 = "0.14.40"
-# sdl3 = { path = "../sdl3-rs" }
-sdl3-sys = "0.5.3"
 mint = { version = "0.5.9", optional = true }
 glam = { version = "0.30.5", optional = true }
 

@@ -4,8 +4,8 @@ use std::{
 };
 
 use imgui::{DrawCmdParams, DrawIdx, DrawVert, internal::RawWrapper};
+use sdl3::sys::gpu::SDL_GPUViewport;
 use sdl3::{gpu::*, rect::Rect, video::Window};
-use sdl3_sys::gpu::SDL_GPUViewport;
 
 use crate::utils::{create_buffer_with_data, create_texture};
 
@@ -260,7 +260,7 @@ impl Renderer {
                         // Skip if scissor is invalid
                         if scissor_w > 0 && scissor_h > 0 {
                             unsafe {
-                                sdl3_sys::gpu::SDL_SetGPUScissor(
+                                sdl3::sys::gpu::SDL_SetGPUScissor(
                                     render_pass.raw(),
                                     Rect::new(scissor_x, scissor_y, scissor_w, scissor_h).raw(),
                                 )

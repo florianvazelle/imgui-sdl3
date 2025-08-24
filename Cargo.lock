@@ -80,7 +80,6 @@ dependencies = [
  "imgui",
  "mint",
  "sdl3",
- "sdl3-sys",
  "shaderc",
 ]
 
