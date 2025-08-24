@@ -196,9 +196,9 @@ dependencies = [
 
 [[package]]
 name = "sdl3-sys"
-version = "0.5.3+SDL3-3.2.18"
+version = "0.5.4+SDL3-3.2.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "573534f614334b7bb6f7bceae86448764fcdcafe92d75482092810cc664ece8c"
+checksum = "5c4f7f348dea346f67f38bc1392bf1edd9250d4c586479778e849f6ee61af2d8"
 
 [[package]]
 name = "shaderc"
