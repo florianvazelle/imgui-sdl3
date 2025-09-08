@@ -17,7 +17,7 @@ mint = { version = "0.5.9", optional = true }
 glam = { version = "0.30.5", optional = true }
 
 [build-dependencies]
-shaderc = "0.10.0"
+shaderc = "0.10.1"
 
 [dev-dependencies]
 
