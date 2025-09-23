@@ -12,13 +12,6 @@ jobs:
       - uses: extractions/setup-just@v3
       - run: nix develop --command just lint
 
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: cachix/install-nix-action@v31
-      - run: nix build 
-
   examples:
     runs-on: ubuntu-latest
     steps:
