@@ -14,7 +14,7 @@ readme = "README.md"
 imgui = "0.12.0"
 sdl3 = "0.14.40"
 mint = { version = "0.5.9", optional = true }
-glam = { version = "0.30.5", optional = true }
+glam = { version = "0.30.7", optional = true }
 
 [build-dependencies]
 shaderc = "0.10.1"
