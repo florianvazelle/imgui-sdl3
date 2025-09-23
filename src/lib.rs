@@ -78,18 +78,10 @@
 //!     Ok(())
 //! }
 //! ```
-//!
-//! # Feature Flags
-//!
-//! | Name                | Description                          |
-//! |---------------------|--------------------------------------|
-//! | `imoguizmo`         | Add an interactive orientation gizmo |
 
 #![crate_name = "imgui_sdl3"]
 #![crate_type = "lib"]
 
-#[cfg(feature = "imoguizmo")]
-pub mod imoguizmo;
 pub mod platform;
 pub mod renderer;
 pub mod utils;

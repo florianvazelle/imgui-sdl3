@@ -21,10 +21,6 @@ This crate provides an SDL3 backend platform and renderer for imgui-rs.
 
 > For a canvas rendering backend, check out [masonjmj/imgui-rs-sdl3-renderer](https://github.com/masonjmj/imgui-rs-sdl3-renderer).
 
-### Available rust features
-
-- `imoguizmo` integrate an interactive orientation gizmo, based on [ImOGuizmo](https://github.com/fknfilewalker/imoguizmo) (check the `examples/imoguizmo.rs` examples to know how to use it).
-
 ## Full demo
 
 ```rust
