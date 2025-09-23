@@ -51,15 +51,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "glam"
-version = "0.30.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f2d1aab06663bdce00d6ca5e5ed586ec8d18033a771906c993a1e3755b368d85"
-dependencies = [
- "mint",
-]
-
-[[package]]
 name = "imgui"
 version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -74,11 +65,9 @@ dependencies = [
 
 [[package]]
 name = "imgui-sdl3"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
- "glam",
  "imgui",
- "mint",
  "sdl3",
  "shaderc",
 ]

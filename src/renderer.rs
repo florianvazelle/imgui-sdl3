@@ -4,7 +4,6 @@ use std::{
 };
 
 use imgui::{DrawCmdParams, DrawIdx, DrawVert, internal::RawWrapper};
-use sdl3::sys::gpu::SDL_GPUViewport;
 use sdl3::{gpu::*, rect::Rect, video::Window};
 
 use crate::utils::{create_buffer_with_data, create_texture};
@@ -213,17 +212,7 @@ impl Renderer {
         );
 
         // Set viewport and projection matrix
-        device.set_viewport(
-            &render_pass,
-            SDL_GPUViewport {
-                x: 0.0,
-                y: 0.0,
-                w: fb_width,
-                h: fb_height,
-                min_depth: 0.0,
-                max_depth: 1.0,
-            },
-        );
+        device.set_viewport(&render_pass, Viewport::new(0.0, 0.0, fb_width, fb_height, 0.0, 1.0));
 
         // Push orthographic projection matrix
         let matrix = [
@@ -259,12 +248,7 @@ impl Renderer {
 
                         // Skip if scissor is invalid
                         if scissor_w > 0 && scissor_h > 0 {
-                            unsafe {
-                                sdl3::sys::gpu::SDL_SetGPUScissor(
-                                    render_pass.raw(),
-                                    Rect::new(scissor_x, scissor_y, scissor_w, scissor_h).raw(),
-                                )
-                            }
+                            render_pass.set_scissor(Rect::new(scissor_x, scissor_y, scissor_w, scissor_h));
                         } else {
                             continue;
                         }
