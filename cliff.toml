@@ -65,8 +65,8 @@ trim = true
 render_always = true
 # An array of regex based postprocessors to modify the changelog.
 postprocessors = [
-    # Replace the placeholder <REPO> with a URL.
-    { pattern = '<REPO>', replace = "https://github.com/vhspace/sdl3-rs" },
+  # Replace the placeholder <REPO> with a URL.
+  { pattern = '<REPO>', replace = "https://github.com/vhspace/sdl3-rs" },
 ]
 
 [git]
@@ -87,18 +87,18 @@ commit_preprocessors = [
 # Assigns commits to groups.
 # Optionally sets the commit's scope and can decide to exclude commits from further processing.
 commit_parsers = [
-    { message = "^feat", group = "<!-- 0 -->Added" },
-    { message = "^doc", group = "<!-- 5 -->Documentation" },
-    { message = "^perf", group = "<!-- 1 -->Changed" },
-    { message = "^test", group = "<!-- 2 -->Fixed" },
-    { message = "^fix", group = "<!-- 2 -->Fixed" },
-    { message = "^refactor", group = "<!-- 1 -->Changed" },
-    { message = "^style", skip = true },
-    { message = "^chore: Bump to", skip = true },
-    { message = "^chore: update CHANGELOG.md", skip = true },
-    { message = "^chore\\(deps.*\\)", group = "<!-- 4 -->Dependencies" },
-    { message = "^chore|^ci", group = "<!-- 1 -->Changed" },
-    { message = "^revert", group = "<!-- 1 -->Changed" },
+  { message = "^feat", group = "<!-- 0 -->Added" },
+  { message = "^doc", group = "<!-- 5 -->Documentation" },
+  { message = "^perf", group = "<!-- 1 -->Changed" },
+  { message = "^test", group = "<!-- 2 -->Fixed" },
+  { message = "^fix", group = "<!-- 2 -->Fixed" },
+  { message = "^refactor", group = "<!-- 1 -->Changed" },
+  { message = "^style", skip = true },
+  { message = "^chore: Bump to", skip = true },
+  { message = "^chore: update CHANGELOG.md", skip = true },
+  { message = "^chore\\(deps.*\\)", group = "<!-- 4 -->Dependencies" },
+  { message = "^chore|^ci", group = "<!-- 1 -->Changed" },
+  { message = "^revert", group = "<!-- 1 -->Changed" },
 ]
 # Exclude commits that are not matched by any commit parser.
 filter_commits = false
