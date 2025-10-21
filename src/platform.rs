@@ -22,6 +22,9 @@ use sdl3::{
 pub struct Platform {
     cursor_instance: Option<Cursor>, /* to avoid dropping cursor instances */
     last_frame: Instant,
+    /// Last known content (DPI) scale factor to avoid applying scaling
+    /// every frame (which would accumulate and produce invalid style values).
+    hidpi_factor: f32,
 }
 
 impl Platform {
@@ -45,6 +48,7 @@ impl Platform {
         Platform {
             cursor_instance: None,
             last_frame: Instant::now(),
+            hidpi_factor: 1.0,
         }
     }
 
@@ -112,6 +116,16 @@ impl Platform {
     /// * current mouse cursor position is passed to imgui-rs
     /// * changes mouse cursor icon (if requested by imgui-rs)
     pub fn prepare_frame(&mut self, sdl: &mut Sdl, context: &mut Context, window: &Window, event_pump: &EventPump) {
+        let content_scale: f32 = window.get_display().and_then(|d| d.get_content_scale()).unwrap_or(1.0);
+        // Apply incremental scaling relative to the last known hi-dpi factor to
+        // avoid accumulating ScaleAllSizes every frame which can shrink sizes
+        // below allowed minima and trigger ImGui sanity checks.
+        let scale_factor = content_scale / self.hidpi_factor;
+        if (scale_factor - 1.0).abs() > f32::EPSILON {
+            context.style_mut().scale_all_sizes(scale_factor);
+            self.hidpi_factor = content_scale;
+        }
+
         let mouse_cursor = context.mouse_cursor();
         let io = context.io_mut();
 
@@ -132,6 +146,7 @@ impl Platform {
             (window_drawable_size.0 as f32) / (window_size.0 as f32),
             (window_drawable_size.1 as f32) / (window_size.1 as f32),
         ];
+        io.font_global_scale = content_scale;
 
         // Set mouse position if requested by imgui-rs
         if io.want_set_mouse_pos {
