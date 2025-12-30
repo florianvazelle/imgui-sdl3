@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.0] - 2025-12-30
 
+### <!-- 0 -->Added
+- Add texture support ([#15](https://github.com/vhspace/sdl3-rs/pull/15))
+
 ### <!-- 4 -->Dependencies
 - Bump sdl3 from 0.16.1 to 0.16.2 ([#11](https://github.com/vhspace/sdl3-rs/pull/11))
 - Bump actions/checkout from 5 to 6 ([#12](https://github.com/vhspace/sdl3-rs/pull/12))

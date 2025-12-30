@@ -88,6 +88,7 @@ commit_preprocessors = [
 # Optionally sets the commit's scope and can decide to exclude commits from further processing.
 commit_parsers = [
   { message = "^feat", group = "<!-- 0 -->Added" },
+  { message = "^Add", group = "<!-- 0 -->Added" },
   { message = "^doc", group = "<!-- 5 -->Documentation" },
   { message = "^perf", group = "<!-- 1 -->Changed" },
   { message = "^test", group = "<!-- 2 -->Fixed" },
