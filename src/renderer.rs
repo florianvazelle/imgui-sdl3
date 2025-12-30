@@ -3,7 +3,7 @@ use std::{
     mem::{offset_of, size_of},
 };
 
-use imgui::{DrawCmdParams, DrawIdx, DrawVert, internal::RawWrapper};
+use imgui::{DrawCmdParams, DrawIdx, DrawVert, TextureId, internal::RawWrapper};
 use sdl3::{gpu::*, rect::Rect, video::Window};
 
 use crate::utils::{create_buffer_with_data, create_texture};
@@ -18,7 +18,7 @@ use crate::utils::{create_buffer_with_data, create_texture};
 /// * Issues draw calls using ImGui's draw list
 pub struct Renderer {
     pipeline: GraphicsPipeline,
-    font_texture: Texture<'static>,
+    textures: Vec<(Texture<'static>, Sampler)>,
 }
 
 impl Renderer {
@@ -110,8 +110,29 @@ impl Renderer {
 
         // Upload the ImGui font texture to the GPU
         let font_texture = create_imgui_font_texture(device, imgui_context)?;
+        // Create a texture sampler and bind font texture
+        let sampler = device
+            .create_sampler(
+                SamplerCreateInfo::new()
+                    .with_min_filter(Filter::Linear)
+                    .with_mag_filter(Filter::Linear)
+                    .with_mipmap_mode(SamplerMipmapMode::Linear)
+                    .with_address_mode_u(SamplerAddressMode::ClampToEdge)
+                    .with_address_mode_v(SamplerAddressMode::ClampToEdge)
+                    .with_address_mode_w(SamplerAddressMode::ClampToEdge),
+            )
+            .unwrap();
 
-        Ok(Self { pipeline, font_texture })
+        Ok(Self {
+            pipeline,
+            textures: vec![(font_texture, sampler)],
+        })
+    }
+
+    pub fn push_texture(&mut self, texture: Texture<'static>, sampler: Sampler) -> TextureId {
+        let id = TextureId::from(self.textures.len());
+        self.textures.push((texture, sampler));
+        id
     }
 
     /// Renders the current ImGui draw data into the window.
@@ -143,25 +164,6 @@ impl Renderer {
 
         let render_pass = device.begin_render_pass(command_buffer, color_targets, None)?;
         render_pass.bind_graphics_pipeline(&self.pipeline);
-
-        // Create a texture sampler and bind font texture
-        let sampler = device
-            .create_sampler(
-                SamplerCreateInfo::new()
-                    .with_min_filter(Filter::Linear)
-                    .with_mag_filter(Filter::Linear)
-                    .with_mipmap_mode(SamplerMipmapMode::Linear)
-                    .with_address_mode_u(SamplerAddressMode::ClampToEdge)
-                    .with_address_mode_v(SamplerAddressMode::ClampToEdge)
-                    .with_address_mode_w(SamplerAddressMode::ClampToEdge),
-            )
-            .unwrap();
-
-        let sampler_binding = TextureSamplerBinding::new()
-            .with_texture(&self.font_texture)
-            .with_sampler(&sampler);
-
-        render_pass.bind_fragment_samplers(0, &[sampler_binding]);
 
         // Flatten all draw data into a single vertex/index buffer
         let mut vtx_data = Vec::with_capacity(draw_data.total_vtx_count as usize);
@@ -237,7 +239,7 @@ impl Renderer {
                                 clip_rect: [x, y, w, h],
                                 idx_offset,
                                 vtx_offset,
-                                ..
+                                texture_id,
                             },
                     } => {
                         // Calculate scissor rectangle
@@ -252,6 +254,10 @@ impl Renderer {
                         } else {
                             continue;
                         }
+
+                        let (t, s) = &self.textures[texture_id.id()];
+                        let binding = TextureSamplerBinding::new().with_texture(t).with_sampler(s);
+                        render_pass.bind_fragment_samplers(0, &[binding]);
 
                         // Draw the elements
                         render_pass.draw_indexed_primitives(
@@ -276,6 +282,9 @@ impl Renderer {
         }
 
         device.end_render_pass(render_pass);
+
+        // Clear all textures except the font, which is always 0.
+        self.textures.drain(1..);
 
         Ok(())
     }
