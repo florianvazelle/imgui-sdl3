@@ -6,22 +6,18 @@
 //!
 //! fn main() -> Result<(), Box<dyn std::error::Error>> {
 //!     // initialize SDL and its video subsystem
-//!     let mut sdl = sdl3::init().unwrap();
-//!     let video_subsystem = sdl.video().unwrap();
+//!     let mut sdl = sdl3::init()?;
+//!     let video_subsystem = sdl.video()?;
 //!
 //!     // create a new window
 //!     let window = video_subsystem
 //!         .window("Hello imgui-rs!", 1280, 720)
 //!         .position_centered()
 //!         .resizable()
-//!         .build()
-//!         .unwrap();
+//!         .build()?;
 //!
-//!     let device = Device::new(ShaderFormat::SPIRV, true)
-//!         .unwrap()
-//!         .with_window(&window)
-//!         .unwrap();
-//!
+//!     let device = Device::new(ShaderFormat::SPIRV, true)?.with_window(&window)?;
+
 //!     // create platform and renderer
 //!     let mut imgui = ImGuiSdl3::new(&device, &window, |ctx| {
 //!         // disable creation of files on disc
@@ -34,7 +30,7 @@
 //!     });
 //!
 //!     // start main loop
-//!     let mut event_pump = sdl.event_pump().unwrap();
+//!     let mut event_pump = sdl.event_pump()?;
 //!
 //!     'main: loop {
 //!         for event in event_pump.poll_iter() {

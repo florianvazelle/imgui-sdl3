@@ -111,17 +111,15 @@ impl Renderer {
         // Upload the ImGui font texture to the GPU
         let font_texture = create_imgui_font_texture(device, imgui_context)?;
         // Create a texture sampler and bind font texture
-        let sampler = device
-            .create_sampler(
-                SamplerCreateInfo::new()
-                    .with_min_filter(Filter::Linear)
-                    .with_mag_filter(Filter::Linear)
-                    .with_mipmap_mode(SamplerMipmapMode::Linear)
-                    .with_address_mode_u(SamplerAddressMode::ClampToEdge)
-                    .with_address_mode_v(SamplerAddressMode::ClampToEdge)
-                    .with_address_mode_w(SamplerAddressMode::ClampToEdge),
-            )
-            .unwrap();
+        let sampler = device.create_sampler(
+            SamplerCreateInfo::new()
+                .with_min_filter(Filter::Linear)
+                .with_mag_filter(Filter::Linear)
+                .with_mipmap_mode(SamplerMipmapMode::Linear)
+                .with_address_mode_u(SamplerAddressMode::ClampToEdge)
+                .with_address_mode_v(SamplerAddressMode::ClampToEdge)
+                .with_address_mode_w(SamplerAddressMode::ClampToEdge),
+        )?;
 
         Ok(Self {
             pipeline,
