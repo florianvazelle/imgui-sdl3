@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.2] - 2026-01-02
+
+### <!-- 4 -->Dependencies
+- Bump sdl3 from 0.16.4 to 0.17.0 ([#17](https://github.com/vhspace/sdl3-rs/pull/17))
+
 ## [0.5.1] - 2026-01-02
 
 ### <!-- 1 -->Changed
@@ -83,6 +88,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.0] - 2025-07-25
 
+[0.5.2]: https://github.com/florianvazelle/imgui-sdl3/compare/0.5.1...0.5.2
 [0.5.1]: https://github.com/florianvazelle/imgui-sdl3/compare/0.5.0...0.5.1
 [0.5.0]: https://github.com/florianvazelle/imgui-sdl3/compare/0.4.1...0.5.0
 [0.4.1]: https://github.com/florianvazelle/imgui-sdl3/compare/0.4.0...0.4.1

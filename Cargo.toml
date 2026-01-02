@@ -1,6 +1,6 @@
 [package]
 name = "imgui-sdl3"
-version = "0.5.1"
+version = "0.5.2"
 authors = ["florianvazelle"]
 edition = "2024"
 description = "Integration of ImGui with SDL3"
