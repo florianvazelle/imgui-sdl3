@@ -16,3 +16,6 @@ sdl3 = "0.16"
 
 [build-dependencies]
 shaderc = "0.10.1"
+
+[dev-dependencies]
+image = "0.25.9"
