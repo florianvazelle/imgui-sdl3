@@ -163,4 +163,8 @@ impl ImGuiSdl3 {
             .render(device, command_buffer, color_targets, &mut self.imgui_context)
             .unwrap();
     }
+
+    pub fn push_texture(&mut self, texture: Texture<'static>, sampler: Sampler) -> imgui::TextureId {
+        self.renderer.push_texture(texture, sampler)
+    }
 }
