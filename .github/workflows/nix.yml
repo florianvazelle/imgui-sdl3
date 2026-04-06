@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: cachix/install-nix-action@v31
-      - uses: extractions/setup-just@v3
+      - uses: extractions/setup-just@v4
       - run: nix develop --command just lint
 
   examples:
@@ -18,5 +18,5 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: cachix/install-nix-action@v31
-      - uses: extractions/setup-just@v3
+      - uses: extractions/setup-just@v4
       - run: nix develop --command just build
