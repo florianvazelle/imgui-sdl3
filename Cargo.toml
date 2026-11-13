@@ -12,7 +12,7 @@ readme = "README.md"
 
 [dependencies]
 imgui = "0.12"
-sdl3 = "0.18"
+sdl3 = "0.22"
 
 [features]
 # Transpile shaders to MSL. Always on when building on macOS; enable it to cross-compile for macOS.
