@@ -8,10 +8,7 @@ fn main() {
     // `cfg(target_os)` in a build script is the host, so read the target from the env.
     let target_macos = env::var("CARGO_CFG_TARGET_OS").unwrap() == "macos";
     #[cfg(not(any(feature = "metal", target_os = "macos")))]
-    assert!(
-        !target_macos,
-        "cross-compiling for macOS requires the `metal` feature"
-    );
+    assert!(!target_macos, "cross-compiling for macOS requires the `metal` feature");
 
     let compiler = shaderc::Compiler::new().unwrap();
     let mut options = shaderc::CompileOptions::new().unwrap();
