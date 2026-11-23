@@ -26,5 +26,9 @@ spirv-cross2 = { version = "0.7.2", features = ["msl"], optional = true }
 [target.'cfg(target_os = "macos")'.build-dependencies]
 spirv-cross2 = { version = "0.7.2", features = ["msl"] }
 
+# docs.rs builds the Apple targets from a Linux host, so it needs the MSL transpiler.
+[package.metadata.docs.rs]
+features = ["metal"]
+
 [dev-dependencies]
 image = "0.25.10"
