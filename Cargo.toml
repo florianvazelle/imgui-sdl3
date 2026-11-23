@@ -17,5 +17,8 @@ sdl3 = "0.18"
 [build-dependencies]
 shaderc = "0.10.1"
 
+[target.'cfg(target_os = "macos")'.build-dependencies]
+spirv-cross2 = { version = "0.7.2", features = ["msl"] }
+
 [dev-dependencies]
 image = "0.25.10"

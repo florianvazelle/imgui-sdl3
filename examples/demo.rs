@@ -10,11 +10,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let window = video_subsystem
         .window("Hello imgui-rs!", 1280, 720)
         .position_centered()
-        .vulkan()
         .resizable()
         .build()?;
 
+    #[cfg(not(target_os = "macos"))]
     let device = Device::new(ShaderFormat::SPIRV, true)?.with_window(&window)?;
+    #[cfg(target_os = "macos")]
+    let device = Device::new(ShaderFormat::MSL, true)?.with_window(&window)?;
 
     // create platform and renderer
     let mut imgui = ImGuiSdl3::new(&device, &window, |ctx| {

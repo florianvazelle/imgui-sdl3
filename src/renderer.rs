@@ -27,31 +27,9 @@ impl Renderer {
     /// This function builds a graphics pipeline from SPIR-V vertex/fragment shaders,
     /// configures the vertex input state to match `DrawVert`, and uploads the ImGui font atlas.
     pub fn new(device: &Device, window: &Window, imgui_context: &mut imgui::Context) -> Result<Self, Box<dyn Error>> {
-        // Load and configure vertex shader
-        let vert = device
-            .create_shader()
-            .with_code(
-                ShaderFormat::SPIRV,
-                include_bytes!(concat!(env!("OUT_DIR"), "/imgui.vert.spv")),
-                ShaderStage::Vertex,
-            )
-            .with_uniform_buffers(1)
-            .with_entrypoint(c"main")
-            .build()?;
-
-        // Load and configure fragment shader
-        let frag = device
-            .create_shader()
-            .with_code(
-                ShaderFormat::SPIRV,
-                include_bytes!(concat!(env!("OUT_DIR"), "/imgui.frag.spv")),
-                ShaderStage::Fragment,
-            )
-            .with_samplers(1)
-            .with_entrypoint(c"main")
-            .build()?;
-
         let format = device.get_swapchain_texture_format(window);
+
+        let [vert, frag] = load_shaders(device)?;
 
         // Build the graphics pipeline
         let pipeline = device
@@ -307,4 +285,60 @@ fn create_imgui_font_texture(
     imgui_context.fonts().tex_id = imgui::TextureId::from(0);
 
     Ok(font_texture)
+}
+
+#[cfg(not(target_os = "macos"))]
+/// Load the shaders.
+fn load_shaders(device: &Device) -> Result<[Shader; 2], Box<dyn std::error::Error>> {
+    let vert = device
+        .create_shader()
+        .with_code(
+            ShaderFormat::SPIRV,
+            include_bytes!(concat!(env!("OUT_DIR"), "/imgui.vert.spv")),
+            ShaderStage::Vertex,
+        )
+        .with_uniform_buffers(1)
+        .with_entrypoint(c"main")
+        .build()?;
+
+    let frag = device
+        .create_shader()
+        .with_code(
+            ShaderFormat::SPIRV,
+            include_bytes!(concat!(env!("OUT_DIR"), "/imgui.frag.spv")),
+            ShaderStage::Fragment,
+        )
+        .with_samplers(1)
+        .with_entrypoint(c"main")
+        .build()?;
+
+    Ok([vert, frag])
+}
+
+#[cfg(target_os = "macos")]
+/// Load the shaders.
+fn load_shaders(device: &Device) -> Result<[Shader; 2], Box<dyn std::error::Error>> {
+    let vert = device
+        .create_shader()
+        .with_code(
+            ShaderFormat::MSL,
+            include_bytes!(concat!(env!("OUT_DIR"), "/imgui.vert.metal")),
+            ShaderStage::Vertex,
+        )
+        .with_uniform_buffers(1)
+        .with_entrypoint(c"main0")
+        .build()?;
+
+    let frag = device
+        .create_shader()
+        .with_code(
+            ShaderFormat::MSL,
+            include_bytes!(concat!(env!("OUT_DIR"), "/imgui.frag.metal")),
+            ShaderStage::Fragment,
+        )
+        .with_samplers(1)
+        .with_entrypoint(c"main0")
+        .build()?;
+
+    Ok([vert, frag])
 }
