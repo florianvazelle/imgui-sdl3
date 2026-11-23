@@ -6,9 +6,12 @@ const SHADER_EXTENSIONS: &[&str] = &["vert", "frag"];
 fn main() {
     let out_dir = PathBuf::from(env::var_os("OUT_DIR").unwrap());
     // `cfg(target_os)` in a build script is the host, so read the target from the env.
-    let target_macos = env::var("CARGO_CFG_TARGET_OS").unwrap() == "macos";
+    let target_apple = env::var("CARGO_CFG_TARGET_VENDOR").unwrap() == "apple";
     #[cfg(not(any(feature = "metal", target_os = "macos")))]
-    assert!(!target_macos, "cross-compiling for macOS requires the `metal` feature");
+    assert!(
+        !target_apple,
+        "cross-compiling for Apple targets requires the `metal` feature"
+    );
 
     let compiler = shaderc::Compiler::new().unwrap();
     let mut options = shaderc::CompileOptions::new().unwrap();
@@ -61,7 +64,7 @@ fn main() {
         fs::write(&dest_path, bin.as_binary_u8()).unwrap();
 
         #[cfg(any(feature = "metal", target_os = "macos"))]
-        if target_macos {
+        if target_apple {
             fs::write(dest_path.with_extension("metal"), compile_into_msl(bin.as_binary())).unwrap();
         }
 
@@ -74,8 +77,16 @@ fn main() {
 
 #[cfg(any(feature = "metal", target_os = "macos"))]
 fn compile_into_msl(spirv: &[u32]) -> String {
-    use spirv_cross2::{Compiler, Module, compile::CompilableTarget, targets::Msl};
+    use spirv_cross2::{
+        Compiler, Module,
+        compile::{CompilableTarget, msl::MetalPlatform},
+        targets::Msl,
+    };
 
     let compiler = Compiler::<Msl>::new(Module::from_words(spirv)).unwrap();
-    compiler.compile(&Msl::options()).unwrap().to_string()
+    let mut options = Msl::options();
+    if env::var("CARGO_CFG_TARGET_OS").unwrap() != "macos" {
+        options.platform = MetalPlatform::iOS;
+    }
+    compiler.compile(&options).unwrap().to_string()
 }

@@ -29,21 +29,25 @@ impl Renderer {
     pub fn new(device: &Device, window: &Window, imgui_context: &mut imgui::Context) -> Result<Self, Box<dyn Error>> {
         let format = device.get_swapchain_texture_format(window);
 
-        // spirv-cross renames `main` to `main0` when emitting MSL.
-        #[cfg(not(target_os = "macos"))]
-        let (shader_format, entrypoint, vert_code, frag_code) = (
+        let spirv = (
             ShaderFormat::SPIRV,
             c"main",
             include_bytes!(concat!(env!("OUT_DIR"), "/imgui.vert.spv")).as_slice(),
             include_bytes!(concat!(env!("OUT_DIR"), "/imgui.frag.spv")).as_slice(),
         );
-        #[cfg(target_os = "macos")]
-        let (shader_format, entrypoint, vert_code, frag_code) = (
-            ShaderFormat::MSL,
-            c"main0",
-            include_bytes!(concat!(env!("OUT_DIR"), "/imgui.vert.metal")).as_slice(),
-            include_bytes!(concat!(env!("OUT_DIR"), "/imgui.frag.metal")).as_slice(),
-        );
+        // Metal takes MSL, but a SPIR-V device (e.g. MoltenVK) is possible on Apple too.
+        #[cfg(target_vendor = "apple")]
+        let spirv = if device.get_shader_formats() & ShaderFormat::MSL == ShaderFormat::MSL {
+            (
+                ShaderFormat::MSL,
+                c"main0", // spirv-cross renames `main` to `main0` when emitting MSL.
+                include_bytes!(concat!(env!("OUT_DIR"), "/imgui.vert.metal")).as_slice(),
+                include_bytes!(concat!(env!("OUT_DIR"), "/imgui.frag.metal")).as_slice(),
+            )
+        } else {
+            spirv
+        };
+        let (shader_format, entrypoint, vert_code, frag_code) = spirv;
 
         // Load and configure vertex shader
         let vert = device
