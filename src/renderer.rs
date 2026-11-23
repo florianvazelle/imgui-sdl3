@@ -27,31 +27,39 @@ impl Renderer {
     /// This function builds a graphics pipeline from SPIR-V vertex/fragment shaders,
     /// configures the vertex input state to match `DrawVert`, and uploads the ImGui font atlas.
     pub fn new(device: &Device, window: &Window, imgui_context: &mut imgui::Context) -> Result<Self, Box<dyn Error>> {
+        let format = device.get_swapchain_texture_format(window);
+
+        // spirv-cross renames `main` to `main0` when emitting MSL.
+        #[cfg(not(target_os = "macos"))]
+        let (shader_format, entrypoint, vert_code, frag_code) = (
+            ShaderFormat::SPIRV,
+            c"main",
+            include_bytes!(concat!(env!("OUT_DIR"), "/imgui.vert.spv")).as_slice(),
+            include_bytes!(concat!(env!("OUT_DIR"), "/imgui.frag.spv")).as_slice(),
+        );
+        #[cfg(target_os = "macos")]
+        let (shader_format, entrypoint, vert_code, frag_code) = (
+            ShaderFormat::MSL,
+            c"main0",
+            include_bytes!(concat!(env!("OUT_DIR"), "/imgui.vert.metal")).as_slice(),
+            include_bytes!(concat!(env!("OUT_DIR"), "/imgui.frag.metal")).as_slice(),
+        );
+
         // Load and configure vertex shader
         let vert = device
             .create_shader()
-            .with_code(
-                ShaderFormat::SPIRV,
-                include_bytes!(concat!(env!("OUT_DIR"), "/imgui.vert.spv")),
-                ShaderStage::Vertex,
-            )
+            .with_code(shader_format, vert_code, ShaderStage::Vertex)
             .with_uniform_buffers(1)
-            .with_entrypoint(c"main")
+            .with_entrypoint(entrypoint)
             .build()?;
 
         // Load and configure fragment shader
         let frag = device
             .create_shader()
-            .with_code(
-                ShaderFormat::SPIRV,
-                include_bytes!(concat!(env!("OUT_DIR"), "/imgui.frag.spv")),
-                ShaderStage::Fragment,
-            )
+            .with_code(shader_format, frag_code, ShaderStage::Fragment)
             .with_samplers(1)
-            .with_entrypoint(c"main")
+            .with_entrypoint(entrypoint)
             .build()?;
-
-        let format = device.get_swapchain_texture_format(window);
 
         // Build the graphics pipeline
         let pipeline = device

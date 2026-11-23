@@ -5,6 +5,10 @@ const SHADER_EXTENSIONS: &[&str] = &["vert", "frag"];
 
 fn main() {
     let out_dir = PathBuf::from(env::var_os("OUT_DIR").unwrap());
+    // `cfg(target_os)` in a build script is the host, so read the target from the env.
+    let target_macos = env::var("CARGO_CFG_TARGET_OS").unwrap() == "macos";
+    #[cfg(not(any(feature = "metal", target_os = "macos")))]
+    assert!(!target_macos, "cross-compiling for macOS requires the `metal` feature");
 
     let compiler = shaderc::Compiler::new().unwrap();
     let mut options = shaderc::CompileOptions::new().unwrap();
@@ -54,11 +58,24 @@ fn main() {
             )
             .unwrap();
 
-        fs::write(dest_path, bin.as_binary_u8()).unwrap();
+        fs::write(&dest_path, bin.as_binary_u8()).unwrap();
+
+        #[cfg(any(feature = "metal", target_os = "macos"))]
+        if target_macos {
+            fs::write(dest_path.with_extension("metal"), compile_into_msl(bin.as_binary())).unwrap();
+        }
 
         println!("cargo:rerun-if-changed={}", path.to_str().unwrap());
     }
 
     println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-changed=shaders");
+}
+
+#[cfg(any(feature = "metal", target_os = "macos"))]
+fn compile_into_msl(spirv: &[u32]) -> String {
+    use spirv_cross2::{Compiler, Module, compile::CompilableTarget, targets::Msl};
+
+    let compiler = Compiler::<Msl>::new(Module::from_words(spirv)).unwrap();
+    compiler.compile(&Msl::options()).unwrap().to_string()
 }
