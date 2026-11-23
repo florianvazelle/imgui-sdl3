@@ -46,7 +46,9 @@ impl Platform {
         io.backend_flags.insert(imgui::BackendFlags::RENDERER_HAS_VTX_OFFSET);
 
         #[cfg(target_os = "macos")]
-        io.config_mac_os_behaviors = true;
+        {
+            io.config_mac_os_behaviors = true;
+        }
 
         Platform {
             cursor_instance: None,
