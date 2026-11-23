@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-11-23
+
+### <!-- 0 -->Added
+- Add MacOS support and support for the Metal backend. ([#34](https://github.com/vhspace/sdl3-rs/pull/34))
+
+### <!-- 1 -->Changed
+- Bump to 0.6.0
+
+### <!-- 4 -->Dependencies
+- Bump sdl3 from 0.18.4 to 0.22.1 ([#33](https://github.com/vhspace/sdl3-rs/pull/33))
+- Bump actions/checkout from 6 to 7 ([#28](https://github.com/vhspace/sdl3-rs/pull/28))
+- Bump sdl3 from 0.18.3 to 0.18.4 ([#27](https://github.com/vhspace/sdl3-rs/pull/27))
+- Bump sdl3 from 0.18.0 to 0.18.2 ([#26](https://github.com/vhspace/sdl3-rs/pull/26))
+- Bump sdl3 from 0.17.3 to 0.18.0 ([#24](https://github.com/vhspace/sdl3-rs/pull/24))
+- Bump extractions/setup-just from 3 to 4 ([#23](https://github.com/vhspace/sdl3-rs/pull/23))
+- Bump image from 0.25.9 to 0.25.10 ([#22](https://github.com/vhspace/sdl3-rs/pull/22))
+- Bump sdl3 from 0.17.1 to 0.17.3 ([#21](https://github.com/vhspace/sdl3-rs/pull/21))
+- Bump sdl3 from 0.17.0 to 0.17.1 ([#19](https://github.com/vhspace/sdl3-rs/pull/19))
+
 ## [0.5.2] - 2026-01-02
 
 ### <!-- 4 -->Dependencies
@@ -88,6 +107,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.0] - 2025-07-25
 
+[0.6.0]: https://github.com/florianvazelle/imgui-sdl3/compare/0.5.2...0.6.0
 [0.5.2]: https://github.com/florianvazelle/imgui-sdl3/compare/0.5.1...0.5.2
 [0.5.1]: https://github.com/florianvazelle/imgui-sdl3/compare/0.5.0...0.5.1
 [0.5.0]: https://github.com/florianvazelle/imgui-sdl3/compare/0.4.1...0.5.0
