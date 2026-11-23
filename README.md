@@ -67,7 +67,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         let mut command_buffer = device.acquire_command_buffer()?;
 
-        if let Ok(swapchain) = command_buffer.wait_and_acquire_swapchain_texture(&window) {
+        if let Ok(Some(swapchain)) = command_buffer.wait_and_acquire_swapchain_texture(&window) {
             let color_targets = [ColorTargetInfo::default()
                 .with_texture(&swapchain)
                 .with_load_op(LoadOp::CLEAR)
@@ -79,7 +79,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 &device,
                 &window,
                 &event_pump,
-                &mut command_buffer,
+                &command_buffer,
                 &color_targets,
                 |ui| {
                     // create imgui UI here
