@@ -5,13 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] - 2026-11-23
+
+### <!-- 1 -->Changed
+- Run lint on macos
+- Fix CHANGELOG urls
+
+### <!-- 2 -->Fixed
+- Generalize to apple target vendor
+
 ## [0.6.0] - 2026-11-23
 
 ### <!-- 0 -->Added
 - Add MacOS support and support for the Metal backend. ([#34](https://github.com/florianvazelle/imgui-sdl3/pull/34))
-
-### <!-- 1 -->Changed
-- **Breaking:** the public API now uses sdl3 0.22 types (`Device`, `CommandBuffer`, `ColorTargetInfo`), and `wait_and_acquire_swapchain_texture` returns `Result<Option<_>>`. Upgrade sdl3 to 0.22 alongside this release.
 
 ### <!-- 4 -->Dependencies
 - Bump sdl3 from 0.18.4 to 0.22.1 ([#33](https://github.com/florianvazelle/imgui-sdl3/pull/33))
@@ -87,7 +93,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### <!-- 1 -->Changed
 - New formatters
-- Bump to 0.3.0
 - Fix examples test
 - Run nix build
 
@@ -99,14 +104,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.2.0] - 2025-07-26
 
-### <!-- 1 -->Changed
-- Bump to 0.2.0
-
 ### <!-- 2 -->Fixed
 - Better render pass
 
 ## [0.1.0] - 2025-07-25
 
+[0.6.1]: https://github.com/florianvazelle/imgui-sdl3/compare/0.6.0...0.6.1
 [0.6.0]: https://github.com/florianvazelle/imgui-sdl3/compare/0.5.2...0.6.0
 [0.5.2]: https://github.com/florianvazelle/imgui-sdl3/compare/0.5.1...0.5.2
 [0.5.1]: https://github.com/florianvazelle/imgui-sdl3/compare/0.5.0...0.5.1
