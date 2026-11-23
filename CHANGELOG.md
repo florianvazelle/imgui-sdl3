@@ -8,26 +8,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.6.0] - 2026-11-23
 
 ### <!-- 0 -->Added
-- Add MacOS support and support for the Metal backend. ([#34](https://github.com/vhspace/sdl3-rs/pull/34))
+- Add MacOS support and support for the Metal backend. ([#34](https://github.com/florianvazelle/imgui-sdl3/pull/34))
 
 ### <!-- 1 -->Changed
-- Bump to 0.6.0
+- **Breaking:** the public API now uses sdl3 0.22 types (`Device`, `CommandBuffer`, `ColorTargetInfo`), and `wait_and_acquire_swapchain_texture` returns `Result<Option<_>>`. Upgrade sdl3 to 0.22 alongside this release.
 
 ### <!-- 4 -->Dependencies
-- Bump sdl3 from 0.18.4 to 0.22.1 ([#33](https://github.com/vhspace/sdl3-rs/pull/33))
-- Bump actions/checkout from 6 to 7 ([#28](https://github.com/vhspace/sdl3-rs/pull/28))
-- Bump sdl3 from 0.18.3 to 0.18.4 ([#27](https://github.com/vhspace/sdl3-rs/pull/27))
-- Bump sdl3 from 0.18.0 to 0.18.2 ([#26](https://github.com/vhspace/sdl3-rs/pull/26))
-- Bump sdl3 from 0.17.3 to 0.18.0 ([#24](https://github.com/vhspace/sdl3-rs/pull/24))
-- Bump extractions/setup-just from 3 to 4 ([#23](https://github.com/vhspace/sdl3-rs/pull/23))
-- Bump image from 0.25.9 to 0.25.10 ([#22](https://github.com/vhspace/sdl3-rs/pull/22))
-- Bump sdl3 from 0.17.1 to 0.17.3 ([#21](https://github.com/vhspace/sdl3-rs/pull/21))
-- Bump sdl3 from 0.17.0 to 0.17.1 ([#19](https://github.com/vhspace/sdl3-rs/pull/19))
+- Bump sdl3 from 0.18.4 to 0.22.1 ([#33](https://github.com/florianvazelle/imgui-sdl3/pull/33))
+- Bump actions/checkout from 6 to 7 ([#28](https://github.com/florianvazelle/imgui-sdl3/pull/28))
+- Bump sdl3 from 0.18.3 to 0.18.4 ([#27](https://github.com/florianvazelle/imgui-sdl3/pull/27))
+- Bump sdl3 from 0.18.0 to 0.18.2 ([#26](https://github.com/florianvazelle/imgui-sdl3/pull/26))
+- Bump sdl3 from 0.17.3 to 0.18.0 ([#24](https://github.com/florianvazelle/imgui-sdl3/pull/24))
+- Bump extractions/setup-just from 3 to 4 ([#23](https://github.com/florianvazelle/imgui-sdl3/pull/23))
+- Bump image from 0.25.9 to 0.25.10 ([#22](https://github.com/florianvazelle/imgui-sdl3/pull/22))
+- Bump sdl3 from 0.17.1 to 0.17.3 ([#21](https://github.com/florianvazelle/imgui-sdl3/pull/21))
+- Bump sdl3 from 0.17.0 to 0.17.1 ([#19](https://github.com/florianvazelle/imgui-sdl3/pull/19))
 
 ## [0.5.2] - 2026-01-02
 
 ### <!-- 4 -->Dependencies
-- Bump sdl3 from 0.16.4 to 0.17.0 ([#17](https://github.com/vhspace/sdl3-rs/pull/17))
+- Bump sdl3 from 0.16.4 to 0.17.0 ([#17](https://github.com/florianvazelle/imgui-sdl3/pull/17))
 
 ## [0.5.1] - 2026-01-02
 
@@ -41,16 +41,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove some unwrap
 
 ### <!-- 4 -->Dependencies
-- Bump sdl3 from 0.16.2 to 0.16.4 ([#14](https://github.com/vhspace/sdl3-rs/pull/14))
+- Bump sdl3 from 0.16.2 to 0.16.4 ([#14](https://github.com/florianvazelle/imgui-sdl3/pull/14))
 
 ## [0.5.0] - 2025-12-30
 
 ### <!-- 0 -->Added
-- Add texture support ([#15](https://github.com/vhspace/sdl3-rs/pull/15))
+- Add texture support ([#15](https://github.com/florianvazelle/imgui-sdl3/pull/15))
 
 ### <!-- 4 -->Dependencies
-- Bump sdl3 from 0.16.1 to 0.16.2 ([#11](https://github.com/vhspace/sdl3-rs/pull/11))
-- Bump actions/checkout from 5 to 6 ([#12](https://github.com/vhspace/sdl3-rs/pull/12))
+- Bump sdl3 from 0.16.1 to 0.16.2 ([#11](https://github.com/florianvazelle/imgui-sdl3/pull/11))
+- Bump actions/checkout from 5 to 6 ([#12](https://github.com/florianvazelle/imgui-sdl3/pull/12))
 
 ## [0.4.1] - 2025-10-22
 

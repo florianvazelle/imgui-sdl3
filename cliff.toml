@@ -66,7 +66,7 @@ render_always = true
 # An array of regex based postprocessors to modify the changelog.
 postprocessors = [
   # Replace the placeholder <REPO> with a URL.
-  { pattern = '<REPO>', replace = "https://github.com/vhspace/sdl3-rs" },
+  { pattern = '<REPO>', replace = "https://github.com/florianvazelle/imgui-sdl3" },
 ]
 
 [git]
@@ -95,7 +95,7 @@ commit_parsers = [
   { message = "^fix", group = "<!-- 2 -->Fixed" },
   { message = "^refactor", group = "<!-- 1 -->Changed" },
   { message = "^style", skip = true },
-  { message = "^chore: Bump to", skip = true },
+  { message = "(?i)^chore: bump to", skip = true },
   { message = "^chore: update CHANGELOG.md", skip = true },
   { message = "^chore\\(deps.*\\)", group = "<!-- 4 -->Dependencies" },
   { message = "^chore|^ci", group = "<!-- 1 -->Changed" },
